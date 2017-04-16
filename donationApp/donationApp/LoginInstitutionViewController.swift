@@ -17,6 +17,8 @@ class LoginInstitutionViewController: UIViewController {
     @IBOutlet weak var emailErrorImage: UIImageView!
     @IBOutlet weak var passwordErrorImage: UIImageView!
     
+    @IBOutlet weak var feedbackLabel: UILabel!
+    
     let ref = FIRDatabase.database().reference(withPath: "features")
 
     override func viewDidLoad() {
@@ -30,29 +32,75 @@ class LoginInstitutionViewController: UIViewController {
             return
         }
         else {
-            FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
+            
+            // Falha de segurança
+            loginInsecure()
+            
+            // Correção
+            //loginWithFirebase()
+        }
+    }
+    
+    func loginInsecure() {
+        
+        let urlString = "http://tecstarstudio-developer.azurewebsites.net/api/PosGraduacao/Seguranca/logar/" + self.emailField.text! + "/" + self.passwordField.text!
+        let url = URL(string: urlString)!
+        let session = URLSession.shared
+        
+        var success = false
+        var msg = ""
+        
+        let task = session.dataTask(with: url) { data, response, error in
+            
+            do {
                 
-                //Error
-                if let error = error {
-                    print("Firebase: Login Error!")
-                    self.showAlert(withTitle: "Erro", message: "Erro ao realizar login: " + error.localizedDescription)
-                    return
+                if let data = data {
+                    success = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! Bool
                 }
                 
-                //Success
-                if let user = user {
-                    print("Firebase: Login successfull")
-                    
-                    // Successo: Entra como Instituição
-                    let institutionsTabBarController = UIStoryboard(name: "Institutions", bundle:nil).instantiateViewController(withIdentifier: "tabBarControllerID") as! UITabBarController
-                    let institutionsNavigationController = UINavigationController(rootViewController: institutionsTabBarController)
-                    let appDelegate = UIApplication.shared.delegate as! AppDelegate
-                    appDelegate.window?.rootViewController = institutionsNavigationController
+                if success {
+                    self.feedbackLabel.isHidden = false
+                    self.feedbackLabel.text = "Login realizado com sucesso."
+                } else {
+                    self.feedbackLabel.isHidden = false
+                    self.feedbackLabel.text = "Erro ao realizar login."
+
                 }
+            }
+            catch let error {
+                print("error: \(error)")
+                self.feedbackLabel.isHidden = false
+                self.feedbackLabel.text = "Erro ao realizar login. (Exception)"
+
+            }
+        }
+        task.resume()
+    }
+
+    func loginWithFirebase() {
+        
+        FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
+            
+            //Error
+            if let error = error {
+                print("Firebase: Login Error!")
+                self.showAlert(withTitle: "Erro", message: "Erro ao realizar login: " + error.localizedDescription)
+                return
+            }
+            
+            //Success
+            if let user = user {
+                print("Firebase: Login successfull")
+                
+                // Successo: Entra como Instituição
+                let institutionsTabBarController = UIStoryboard(name: "Institutions", bundle:nil).instantiateViewController(withIdentifier: "tabBarControllerID") as! UITabBarController
+                let institutionsNavigationController = UINavigationController(rootViewController: institutionsTabBarController)
+                let appDelegate = UIApplication.shared.delegate as! AppDelegate
+                appDelegate.window?.rootViewController = institutionsNavigationController
             }
         }
     }
-
+    
     func isEmptyFields() -> Bool {
         
         var isEmpty : Bool = false;

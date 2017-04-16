@@ -263,9 +263,19 @@
                                     </segue>
                                 </connections>
                             </button>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Login realizado com sucesso!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iMH-19-5Ns">
+                                <rect key="frame" x="37" y="571" width="300" height="16"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="300" id="WZW-UN-6Wz"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="iMH-19-5Ns" firstAttribute="top" secondItem="p1h-Un-aQA" secondAttribute="bottom" constant="29" id="0rw-lc-Rrn"/>
                             <constraint firstItem="Vsf-pQ-WuV" firstAttribute="top" secondItem="g5I-rE-7Np" secondAttribute="bottom" constant="20" id="3Ad-ee-IXW"/>
                             <constraint firstItem="Vsf-pQ-WuV" firstAttribute="centerX" secondItem="Zvc-f3-rHk" secondAttribute="centerX" id="7cA-BU-ysd"/>
                             <constraint firstItem="5Ff-DN-isx" firstAttribute="leading" secondItem="g5I-rE-7Np" secondAttribute="trailing" constant="5" id="JSJ-m9-hSl"/>
@@ -282,6 +292,7 @@
                             <constraint firstItem="sGA-GI-alI" firstAttribute="leading" secondItem="Qdr-5G-SC5" secondAttribute="trailing" constant="5" id="nCc-hz-poe"/>
                             <constraint firstItem="g5I-rE-7Np" firstAttribute="centerX" secondItem="Zvc-f3-rHk" secondAttribute="centerX" id="oBw-ta-ChE"/>
                             <constraint firstItem="Qdr-5G-SC5" firstAttribute="top" secondItem="xrP-EO-6l2" secondAttribute="bottom" constant="30" id="qpn-aq-RKp"/>
+                            <constraint firstItem="iMH-19-5Ns" firstAttribute="centerX" secondItem="Zvc-f3-rHk" secondAttribute="centerX" id="tZ8-cm-nC1"/>
                             <constraint firstItem="Qdr-5G-SC5" firstAttribute="centerX" secondItem="Zvc-f3-rHk" secondAttribute="centerX" id="tpE-D5-ql9"/>
                             <constraint firstItem="bks-yi-wo1" firstAttribute="centerX" secondItem="Zvc-f3-rHk" secondAttribute="centerX" id="tq2-PX-EuJ"/>
                         </constraints>
@@ -290,6 +301,7 @@
                     <connections>
                         <outlet property="emailErrorImage" destination="sGA-GI-alI" id="Wq3-KV-rjc"/>
                         <outlet property="emailField" destination="Qdr-5G-SC5" id="HyX-2l-AsD"/>
+                        <outlet property="feedbackLabel" destination="iMH-19-5Ns" id="IU4-xL-yiM"/>
                         <outlet property="passwordErrorImage" destination="5Ff-DN-isx" id="cuE-2t-4A5"/>
                         <outlet property="passwordField" destination="g5I-rE-7Np" id="2Jl-gO-aBH"/>
                     </connections>
