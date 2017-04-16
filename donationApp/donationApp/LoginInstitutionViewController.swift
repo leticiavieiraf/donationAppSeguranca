@@ -34,10 +34,10 @@ class LoginInstitutionViewController: UIViewController {
         else {
             
             // Falha de segurança
-            loginInsecure()
+            //loginInsecure()
             
             // Correção
-            //loginWithFirebase()
+            loginWithFirebase()
         }
     }
     
