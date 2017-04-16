@@ -1,15 +1,15 @@
 //
-//  DonationItem.swift
+//  OrderItem.swift
 //  donationApp
 //
-//  Created by Letícia Fernandes on 11/03/17.
+//  Created by Natalia Sheila Cardoso de Siqueira on 15/04/17.
 //  Copyright © 2017 PUC. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import Firebase
 
-struct DonationItem {
+struct OrderItem {
     
     var key: String
     var name: String

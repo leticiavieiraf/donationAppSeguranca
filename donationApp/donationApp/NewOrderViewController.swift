@@ -1,14 +1,14 @@
 //
-//  NewDonationViewController.swift
+//  NewOrderViewController.swift
 //  donationApp
 //
-//  Created by Letícia Fernandes on 11/03/17.
+//  Created by Letícia Fernandes on 14/04/17.
 //  Copyright © 2017 PUC. All rights reserved.
 //
 
 import UIKit
 
-class NewDonationViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+class NewOrderViewController: UIViewController , UIPickerViewDelegate, UIPickerViewDataSource {
     
     @IBOutlet weak var picker: UIPickerView!
     var pickerData: [String] = [String]()
@@ -38,7 +38,7 @@ class NewDonationViewController: UIViewController, UIPickerViewDelegate, UIPicke
     public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return pickerData.count
     }
-
+    
     // MARK: UIPickerViewDelegate
     public func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return pickerData[row]
@@ -51,7 +51,7 @@ class NewDonationViewController: UIViewController, UIPickerViewDelegate, UIPicke
     // MARK: Save Button
     @IBAction func save(_ sender: Any) {
         selectedItem = selectedItem == "" ? pickerData[0] : selectedItem
-
+        
         self.removeAnimate()
         self.delegate?.didPressSaveWithSelectItem(selectedItem)
     }

@@ -18,10 +18,19 @@ class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSe
     
     var items : [DonationItem] = []
     var donatorUser : DonatorUser!
-    let ref = FIRDatabase.database().reference(withPath: "donation-items")
+    let refDonationItems = FIRDatabase.database().reference(withPath: "donation-items")
     
+    // MARK: Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.tabBarController?.title = "Minhas Doações"
+        let addButton = UIBarButtonItem.init(barButtonSystemItem: UIBarButtonSystemItem.add, target: self, action: #selector(showNewDonationPopUp))
+        self.tabBarController?.navigationItem.rightBarButtonItem = addButton
         
         if AccessToken.current == nil || FIRAuth.auth()?.currentUser == nil {
             print("Facebook: User IS NOT logged in!")
@@ -33,43 +42,67 @@ class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSe
             appDelegate.window?.rootViewController = loginNav
             
         } else {
-         
-            // Busca doações
-            FIRAuth.auth()!.addStateDidChangeListener { auth, user in
-                guard let user = user else { return }
-                self.donatorUser = DonatorUser(authData: user)
+            if let currentUser = self.donatorUser {
+                loadDonationsFrom(currentUser.uid)
+            } else {
+                getUserAndLoadDonations()
             }
-            
-            ref.observe(.value, with: { snapshot in
-                
-                //print(snapshot.value)
-                var newItems: [DonationItem] = []
-                
-                for item in snapshot.children {
-                    let donationItem = DonationItem(snapshot: item as! FIRDataSnapshot)
-                    newItems.append(donationItem)
-                }
-                
-                self.items = newItems
-                self.tableView.reloadData()
-            })
-
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    // MARK: Firebase methods
+    func getUserAndLoadDonations() {
         
-        self.tabBarController?.title = "Minhas Doações"
-        let addButton = UIBarButtonItem.init(barButtonSystemItem: UIBarButtonSystemItem.add, target: self, action: #selector(showNewDonationPopUp))
-        self.tabBarController?.navigationItem.rightBarButtonItem = addButton
-
+        FIRAuth.auth()!.addStateDidChangeListener { auth, user in
+            guard let user = user else { return }
+            
+            if AccessToken.current != nil {
+                self.donatorUser = DonatorUser(authData: user)
+                self.loadDonationsFrom(self.donatorUser.uid)
+            }
+        }
     }
     
+    func loadDonationsFrom(_ userUID: String) {
+        
+       refDonationItems.child("users-uid").child(userUID.lowercased()).observe(.value, with: { snapshot in
+            var newItems: [DonationItem] = []
+            
+            for item in snapshot.children.allObjects {
+                let donationItem = DonationItem(snapshot: item as! FIRDataSnapshot)
+                newItems.append(donationItem)
+            }
+            
+            self.items = newItems
+            self.tableView.reloadData()
+        })
+    }
+    
+    func insert(donation: String) {
+        
+        let date = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yyyy HH:mm"
+        let dateStr = formatter.string(from: date)
+        
+        
+        let donationItem = DonationItem(name: donation,
+                                        addedByUser: donatorUser.name,
+                                        userUid: donatorUser.uid,
+                                        userEmail: donatorUser.email,
+                                        userPhotoUrl: donatorUser.photoUrl,
+                                        publishDate: dateStr)
+        
+        let donationItemRef = refDonationItems.child("users-uid").child(donationItem.userUid.lowercased()).childByAutoId()
+        donationItemRef.setValue(donationItem.toAnyObject())
+    }
+    
+    // MARK: Popup New Donation
     func showNewDonationPopUp() {
      
         let newDonationVC = UIStoryboard(name: "Donators", bundle:nil).instantiateViewController(withIdentifier: "sbPopUpID") as! NewDonationViewController
         newDonationVC.delegate = self
+        
         self.addChildViewController(newDonationVC)
         newDonationVC.view.frame = self.view.frame
         self.view.addSubview(newDonationVC.view)
@@ -77,27 +110,11 @@ class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSe
     }
     
     func didPressSaveWithSelectItem(_ item: String) {
-        
-        let date = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yyyy HH:mm:ss"
-        let dateStr = formatter.string(from: date)
-        
-  
-        let donationItem = DonationItem(name: item,
-                                        addedByUser: donatorUser.name,
-                                        userUid: donatorUser.uid,
-                                        userEmail: donatorUser.email,
-                                        userPhotoUrl: donatorUser.photoUrl,
-                                        publishDate: dateStr)
-        
-        let donationItemRef = self.ref.child(donationItem.userUid.lowercased())//.childByAutoId()
-        donationItemRef.setValue(donationItem.toAnyObject())
+        insert(donation:item)
     }
     
     // MARK: UITableViewDataSource
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return items.count
     }
     

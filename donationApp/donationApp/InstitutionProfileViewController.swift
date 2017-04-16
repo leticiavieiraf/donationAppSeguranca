@@ -1,39 +1,44 @@
 //
-//  DonatorProfileViewController.swift
+//  InstitutionProfileViewController.swift
 //  donationApp
 //
-//  Created by Letícia Fernandes on 11/03/17.
+//  Created by Letícia Fernandes on 14/04/17.
 //  Copyright © 2017 PUC. All rights reserved.
 //
 
 import UIKit
 import FirebaseAuth
-import FacebookLogin
-import FacebookCore
+import FirebaseDatabase
 
-class DonatorProfileViewController: UIViewController {
+class InstitutionProfileViewController: UIViewController {
 
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var emailLabel: UILabel!
-    @IBOutlet weak var profileImageView: UIImageView!
+    @IBOutlet weak var addressLabel: UILabel!
+    @IBOutlet weak var infoLabel: UILabel!
+    @IBOutlet weak var phoneLabel: UILabel!
     
+    var institutionUser : InstitutionUser!
+    let refInstitutionUsers = FIRDatabase.database().reference(withPath: "institution-users")
+
+    
+    // MARK: Lyfe Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if AccessToken.current != nil || FIRAuth.auth()?.currentUser != nil {
+        if FIRAuth.auth()?.currentUser != nil {
             
-            self.nameLabel.text = FIRAuth.auth()?.currentUser?.displayName
-            self.emailLabel.text = FIRAuth.auth()?.currentUser?.email
+            let userUID = FIRAuth.auth()?.currentUser!.uid
             
-            // Load image profile
-            do {
-                try self.loadProfileImageWith(urlString: (FIRAuth.auth()?.currentUser?.photoURL?.absoluteString)!)
+            refInstitutionUsers.child(userUID!).observeSingleEvent(of: .value, with: { (snapshot) in
+                self.institutionUser = InstitutionUser(snapshot: snapshot)
                 
-            } catch let loadingImageError as NSError {
-                
-                print(loadingImageError.localizedDescription)
-                self.profileImageView.image = UIImage(named: "user-big")
-            }
+                self.nameLabel.text = self.institutionUser.name
+                self.emailLabel.text = self.institutionUser.email
+                self.addressLabel.text = self.institutionUser.address + ", " + self.institutionUser.district + ", " + self.institutionUser.city + " - " + self.institutionUser.state + ". Cep: " + self.institutionUser.zipCode
+                self.infoLabel.text = self.institutionUser.group
+                self.phoneLabel.text = self.institutionUser.phone
+            })
         }
     }
     
@@ -44,28 +49,9 @@ class DonatorProfileViewController: UIViewController {
         self.tabBarController?.navigationItem.rightBarButtonItem = nil
     }
     
-    func loadProfileImageWith(urlString:String) throws
-    {
-        let url: URL = URL(string: urlString)!
-    
-        DispatchQueue.global().async {
-            let data = try? Data(contentsOf: url)
-            
-            DispatchQueue.main.async {
-                self.profileImageView.image = UIImage(data: data!)
-            }
-        }
-    }
-    
+    // MARK: Firebase method
     @IBAction func logout(_ sender: Any) {
         
-        // Logout Facebook
-        if AccessToken.current != nil {
-            let loginManager = LoginManager()
-            loginManager.logOut()
-        }
-       
-        // Logout Firebase
         if FIRAuth.auth()?.currentUser != nil {
             
             let firebaseAuth = FIRAuth.auth()
@@ -78,21 +64,21 @@ class DonatorProfileViewController: UIViewController {
                 appDelegate.window?.rootViewController = loginNav
                 
             } catch let signOutError as NSError {
-        
+                
                 // Show alert
-                let errorMsg = "Erro ao realizar logout no Firebase: " + signOutError.localizedDescription
+                let errorMsg = "Erro ao realizar logout: " + signOutError.localizedDescription
                 let alert = UIAlertController(title: "Erro",
                                               message: errorMsg,
                                               preferredStyle: .alert)
-            
+                
                 let okAction = UIAlertAction(title: "Ok",
-                                            style: .default)
+                                             style: .default)
                 
                 alert.addAction(okAction)
                 self.present(alert, animated: true, completion: nil)
             }
         }
     }
-  
+
 
 }
