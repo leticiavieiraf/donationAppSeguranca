@@ -20,4 +20,6 @@ target 'donationApp' do
   pod 'Firebase/Auth'
   pod 'Firebase/Storage'
   pod 'Firebase/RemoteConfig'
+  pod 'CryptoSwift'
+  pod 'SVProgressHUD'
 end
