@@ -65,8 +65,16 @@ class RegisterInstitutionViewController: UIViewController {
     // MARK: Firebase methods
     func register(_ institution : Institution) {
     
-        let bytes = Array(self.passwordField.text!.utf8)
-        let hash = (self.passwordField.text!).md5()
+        let password = self.passwordField.text!
+        
+        // Criptografia insegura
+        let hash = password.md5()
+        
+        // Criptografia segura
+//        let bytes = Array(password.utf8)
+//        let plain = Data(bytes: bytes)
+//        let encrypted = try! plain.encrypt(cipher: ChaCha20(key: password, iv: String(password.characters.reversed())))
+//        let decrypted = try! encrypted.decrypt(cipher: ChaCha20(key: password, iv: String(password.characters.reversed())))
         
         FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
             
