@@ -11,6 +11,7 @@ import FirebaseAuth
 import FirebaseDatabase
 import FacebookLogin
 import FacebookCore
+import SVProgressHUD
 
 class OrdersViewController: UIViewController, UITableViewDataSource {
     
@@ -47,6 +48,9 @@ class OrdersViewController: UIViewController, UITableViewDataSource {
     // MARK: Firebase methods
     func loadAllOrders() {
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         refOrderItems.child("users-uid").observe(.value, with: { (snapshot) in
             var count = 0
             var userIdKeys = [String]()
@@ -69,6 +73,7 @@ class OrdersViewController: UIViewController, UITableViewDataSource {
                     if count == userIdKeys.count {
                         self.items = orders
                         self.tableView.reloadData()
+                        SVProgressHUD.dismiss()
                     }
                 })
             }

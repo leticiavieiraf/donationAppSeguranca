@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import SVProgressHUD
 
 class LoginInstitutionViewController: UIViewController {
     
@@ -46,10 +47,10 @@ class LoginInstitutionViewController: UIViewController {
         let urlString = "http://tecstarstudio-developer.azurewebsites.net/api/PosGraduacao/Seguranca/logar/" + self.emailField.text! + "/" + self.passwordField.text!
         let url = URL(string: urlString)!
         let session = URLSession.shared
-        
         var success = false
-        var msg = ""
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
         let task = session.dataTask(with: url) { data, response, error in
             
             do {
@@ -59,17 +60,16 @@ class LoginInstitutionViewController: UIViewController {
                 }
                 
                 if success {
-                    self.feedbackLabel.isHidden = false
                     self.feedbackLabel.text = "Login realizado com sucesso."
                 } else {
-                    self.feedbackLabel.isHidden = false
                     self.feedbackLabel.text = "Erro ao realizar login."
-
                 }
+                SVProgressHUD.dismiss(withDelay: 9.0)
+                
             }
             catch let error {
+                SVProgressHUD.dismiss(withDelay: 9.0)
                 print("error: \(error)")
-                self.feedbackLabel.isHidden = false
                 self.feedbackLabel.text = "Erro ao realizar login. (Exception)"
 
             }
@@ -79,7 +79,12 @@ class LoginInstitutionViewController: UIViewController {
 
     func loginWithFirebase() {
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
+            
+            SVProgressHUD.dismiss()
             
             //Error
             if let error = error {

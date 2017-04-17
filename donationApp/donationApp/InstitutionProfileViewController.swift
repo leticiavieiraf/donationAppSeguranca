@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseAuth
 import FirebaseDatabase
+import SVProgressHUD
 
 class InstitutionProfileViewController: UIViewController {
 
@@ -29,6 +30,9 @@ class InstitutionProfileViewController: UIViewController {
         if FIRAuth.auth()?.currentUser != nil {
             
             let userUID = FIRAuth.auth()?.currentUser!.uid
+
+            SVProgressHUD.setDefaultStyle(.dark)
+            SVProgressHUD.show()
             
             refInstitutionUsers.child(userUID!).observeSingleEvent(of: .value, with: { (snapshot) in
                 self.institutionUser = InstitutionUser(snapshot: snapshot)
@@ -38,6 +42,8 @@ class InstitutionProfileViewController: UIViewController {
                 self.addressLabel.text = self.institutionUser.address + ", " + self.institutionUser.district + ", " + self.institutionUser.city + " - " + self.institutionUser.state + ". Cep: " + self.institutionUser.zipCode
                 self.infoLabel.text = self.institutionUser.group
                 self.phoneLabel.text = self.institutionUser.phone
+                
+                SVProgressHUD.dismiss()
             })
         }
     }

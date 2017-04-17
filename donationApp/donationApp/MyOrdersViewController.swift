@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseAuth
 import FirebaseDatabase
+import SVProgressHUD
 
 class MyOrdersViewController: UIViewController, UITableViewDataSource, ItemSelectionDelegate {
     
@@ -57,7 +58,13 @@ class MyOrdersViewController: UIViewController, UITableViewDataSource, ItemSelec
         
         let userUID = FIRAuth.auth()?.currentUser?.uid
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         refInstitutionUsers.child(userUID!).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            SVProgressHUD.dismiss()
+            
             self.institutionUser = InstitutionUser(snapshot: snapshot)
             self.loadOrdersFrom(self.institutionUser.uid)
         })
@@ -66,7 +73,13 @@ class MyOrdersViewController: UIViewController, UITableViewDataSource, ItemSelec
     
     func loadOrdersFrom(_ userUID: String) {
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         refOrderItems.child("users-uid").child(userUID.lowercased()).observe(.value, with: { (snapshot) in
+            
+            SVProgressHUD.dismiss()
+            
             var newItems: [OrderItem] = []
             
             for item in snapshot.children.allObjects {
@@ -116,7 +129,6 @@ class MyOrdersViewController: UIViewController, UITableViewDataSource, ItemSelec
     
     // MARK: UITableViewDataSource
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         return items.count
     }
     
@@ -132,7 +144,6 @@ class MyOrdersViewController: UIViewController, UITableViewDataSource, ItemSelec
     }
     
     public func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        
         return true
     }
     

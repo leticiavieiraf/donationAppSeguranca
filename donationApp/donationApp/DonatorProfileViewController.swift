@@ -10,6 +10,7 @@ import UIKit
 import FirebaseAuth
 import FacebookLogin
 import FacebookCore
+import SVProgressHUD
 
 class DonatorProfileViewController: UIViewController {
 
@@ -31,6 +32,7 @@ class DonatorProfileViewController: UIViewController {
                 
             } catch let loadingImageError as NSError {
                 
+                SVProgressHUD.dismiss()
                 print(loadingImageError.localizedDescription)
                 self.profileImageView.image = UIImage(named: "user-big")
             }
@@ -48,10 +50,14 @@ class DonatorProfileViewController: UIViewController {
     {
         let url: URL = URL(string: urlString)!
     
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         DispatchQueue.global().async {
             let data = try? Data(contentsOf: url)
             
             DispatchQueue.main.async {
+                SVProgressHUD.dismiss()
                 self.profileImageView.image = UIImage(data: data!)
             }
         }

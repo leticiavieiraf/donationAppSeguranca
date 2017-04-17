@@ -12,6 +12,7 @@ import FirebaseAuth
 import FirebaseDatabase
 import FacebookLogin
 import FacebookCore
+import SVProgressHUD
 
 class InstitutionsViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
     
@@ -40,6 +41,9 @@ class InstitutionsViewController: UIViewController, MKMapViewDelegate, CLLocatio
             self.locationManager.requestWhenInUseAuthorization()
 
             // Busca Instituições
+            SVProgressHUD.setDefaultStyle(.dark)
+            SVProgressHUD.show()
+            
             ref.observe(.value, with: { snapshot in
                 
                 var count = 0
@@ -72,6 +76,8 @@ class InstitutionsViewController: UIViewController, MKMapViewDelegate, CLLocatio
                     
                     self.institutions.append(institution)
                 }
+                
+                SVProgressHUD.dismiss()
             })
         }
     }

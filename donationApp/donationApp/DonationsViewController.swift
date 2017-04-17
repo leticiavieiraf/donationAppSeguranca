@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseAuth
 import FirebaseDatabase
+import SVProgressHUD
 
 class DonationsViewController: UIViewController, UITableViewDataSource {
     
@@ -44,7 +45,10 @@ class DonationsViewController: UIViewController, UITableViewDataSource {
     
     // MARK: Firebase methods
     func loadDonations() {
-
+        
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         refDonationItems.child("users-uid").observe(.value, with: { (snapshot) in
             var count = 0
             var userIdKeys = [String]()
@@ -67,6 +71,7 @@ class DonationsViewController: UIViewController, UITableViewDataSource {
                     if count == userIdKeys.count {
                         self.items = donations
                         self.tableView.reloadData()
+                        SVProgressHUD.dismiss()
                     }
                 })
             }

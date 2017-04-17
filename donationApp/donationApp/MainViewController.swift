@@ -11,6 +11,7 @@ import FacebookLogin
 import FBSDKLoginKit
 import FacebookCore
 import FirebaseAuth
+import SVProgressHUD
 
 class MainViewController: UIViewController, FBSDKLoginButtonDelegate  {
 
@@ -76,8 +77,13 @@ class MainViewController: UIViewController, FBSDKLoginButtonDelegate  {
     // Login no Firebase com o Token do Facebook
     func logInWithFirebase() {
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         let credential = FIRFacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
         FIRAuth.auth()?.signIn(with: credential) { (user, error) in
+            
+            SVProgressHUD.dismiss()
             
             //Error
             if let error = error {

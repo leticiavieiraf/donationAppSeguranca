@@ -8,6 +8,8 @@
 
 import UIKit
 import Firebase
+import SVProgressHUD
+import CryptoSwift
 
 class RegisterInstitutionViewController: UIViewController {
     
@@ -39,12 +41,17 @@ class RegisterInstitutionViewController: UIViewController {
         }
         else {
             // Busca Instituições
+            
+            SVProgressHUD.setDefaultStyle(.dark)
+            SVProgressHUD.show()
+            
             refInstitutions.observe(.value, with: { snapshot in
                 
                 if let institution = self.findInstitutionInResults(snapshot) {
                     self.register(institution)
                 }
                 else {
+                    SVProgressHUD.dismiss()
                     self.showAlert(withTitle: "Atenção!", message: "\n Não foi possível realizar o cadastro.\n\n Este e-mail não foi encontrado na base de Instituições reconhecidas.")
                 }
             })
@@ -57,6 +64,9 @@ class RegisterInstitutionViewController: UIViewController {
     
     // MARK: Firebase methods
     func register(_ institution : Institution) {
+    
+        let bytes = Array(self.passwordField.text!.utf8)
+        let hash = (self.passwordField.text!).md5()
         
         FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
             
@@ -65,6 +75,7 @@ class RegisterInstitutionViewController: UIViewController {
             
             //Error
             if let error = error {
+                SVProgressHUD.dismiss()
                 print("Firebase: Register Error!")
                 title = "Erro"
                 msg = error.localizedDescription
@@ -132,6 +143,7 @@ class RegisterInstitutionViewController: UIViewController {
     let userInstitutionRef = self.refInstitutionsUsers.child(userInstitution.uid)
     userInstitutionRef.setValue(userInstitution.toAnyObject())
         
+        SVProgressHUD.dismiss()
     }
     
     // MARK: Validation methods

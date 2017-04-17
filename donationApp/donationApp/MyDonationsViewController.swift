@@ -11,6 +11,7 @@ import FirebaseAuth
 import FirebaseDatabase
 import FacebookLogin
 import FacebookCore
+import SVProgressHUD
 
 class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSelectionDelegate {
 
@@ -53,7 +54,13 @@ class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSe
     // MARK: Firebase methods
     func getUserAndLoadDonations() {
         
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
+        
         FIRAuth.auth()!.addStateDidChangeListener { auth, user in
+            
+            SVProgressHUD.dismiss()
+            
             guard let user = user else { return }
             
             if AccessToken.current != nil {
@@ -64,8 +71,14 @@ class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSe
     }
     
     func loadDonationsFrom(_ userUID: String) {
+       
+        SVProgressHUD.setDefaultStyle(.dark)
+        SVProgressHUD.show()
         
-       refDonationItems.child("users-uid").child(userUID.lowercased()).observe(.value, with: { snapshot in
+        refDonationItems.child("users-uid").child(userUID.lowercased()).observe(.value, with: { snapshot in
+            
+            SVProgressHUD.dismiss()
+            
             var newItems: [DonationItem] = []
             
             for item in snapshot.children.allObjects {
@@ -130,7 +143,6 @@ class MyDonationsViewController: UIViewController, UITableViewDataSource, ItemSe
     }
     
     public func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        
         return true
     }
     
