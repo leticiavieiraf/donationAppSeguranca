@@ -96,7 +96,7 @@ class MainViewController: UIViewController, FBSDKLoginButtonDelegate  {
             if let user = user {
                 print("Firebase: Login successfull")
                 
-                // Successo: Redireciona para o storyboard de Doador
+                // Redireciona para o storyboard de Doador
                 let donatorsTabBarController = UIStoryboard(name: "Donators", bundle:nil).instantiateViewController(withIdentifier: "tabBarControllerID") as! UITabBarController
                 let donatorsNavigationController = UINavigationController(rootViewController: donatorsTabBarController)
                 let appDelegate = UIApplication.shared.delegate as! AppDelegate

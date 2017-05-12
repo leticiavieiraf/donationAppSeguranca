@@ -2,13 +2,14 @@
 //  LoginInstitutionViewController.swift
 //  donationApp
 //
-//  Created by Natalia Sheila Cardoso de Siqueira on 14/04/17.
+//  Created by Leticia Vieira Fernandes on 14/04/17.
 //  Copyright © 2017 PUC. All rights reserved.
 //
 
 import UIKit
 import Firebase
 import SVProgressHUD
+import CryptoSwift
 
 class LoginInstitutionViewController: UIViewController {
     
@@ -22,26 +23,27 @@ class LoginInstitutionViewController: UIViewController {
     
     let ref = FIRDatabase.database().reference(withPath: "features")
 
+    // MARK: Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
     }
     
-    // Entrar
+    // MARK: Actions
     @IBAction func logIn(_ sender: Any) {
         
         if isEmptyFields() {
             return
         }
         else {
-            
             // Falha de segurança
-            //loginInsecure()
+            // loginInsecure()
             
             // Correção
             loginWithFirebase()
         }
     }
     
+    // MARK: Firebase methods
     func loginInsecure() {
         
         let urlString = "http://tecstarstudio-developer.azurewebsites.net/api/PosGraduacao/Seguranca/logar/" + self.emailField.text! + "/" + self.passwordField.text!
@@ -71,7 +73,6 @@ class LoginInstitutionViewController: UIViewController {
                 SVProgressHUD.dismiss(withDelay: 9.0)
                 print("error: \(error)")
                 self.feedbackLabel.text = "Erro ao realizar login. (Exception)"
-
             }
         }
         task.resume()
@@ -82,7 +83,10 @@ class LoginInstitutionViewController: UIViewController {
         SVProgressHUD.setDefaultStyle(.dark)
         SVProgressHUD.show()
         
-        FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
+        // Criptografia segura (AES)
+        let password_aes = aesEncryption(self.passwordField.text!)
+        
+        FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: password_aes) { (user, error) in
             
             SVProgressHUD.dismiss()
             
@@ -97,7 +101,7 @@ class LoginInstitutionViewController: UIViewController {
             if let user = user {
                 print("Firebase: Login successfull")
                 
-                // Successo: Entra como Instituição
+                // Redireciona para o storyboard de Instituição
                 let institutionsTabBarController = UIStoryboard(name: "Institutions", bundle:nil).instantiateViewController(withIdentifier: "tabBarControllerID") as! UITabBarController
                 let institutionsNavigationController = UINavigationController(rootViewController: institutionsTabBarController)
                 let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -106,6 +110,36 @@ class LoginInstitutionViewController: UIViewController {
         }
     }
     
+    // MARK: Encryption methods
+    func aesEncryption(_ password: String) -> String {
+        
+        do {
+            let key : Array<UInt8> = Array("770A8A65DA156D24EE2A093277530142".utf8)
+            let iv  : Array<UInt8> = Array("F5502320F8429037".utf8)
+            let bytesPass : Array<UInt8> = Array(password.utf8)
+            
+            let encrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).encrypt(bytesPass);
+            let decrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).decrypt(encrypted)
+            
+            let encryptedStr = Data(bytes: encrypted).toHexString()
+            print(encryptedStr)
+            
+            if let decryptedStr = String(data: Data(bytes: decrypted), encoding: .utf8) {
+                print(decryptedStr)
+            } else {
+                print("That's not a valid UTF-8 sequence.")
+            }
+            
+            return encryptedStr
+            
+        } catch {
+            print(error)
+        }
+        
+        return password;
+    }
+    
+    // MARK: Validation methods
     func isEmptyFields() -> Bool {
         
         var isEmpty : Bool = false;

@@ -2,7 +2,7 @@
 //  RegisterInstitutionViewController.swift
 //  donationApp
 //
-//  Created by Natalia Sheila Cardoso de Siqueira on 14/04/17.
+//  Created by Leticia Vieira Fernandes on 14/04/17.
 //  Copyright © 2017 PUC. All rights reserved.
 //
 
@@ -23,6 +23,8 @@ class RegisterInstitutionViewController: UIViewController {
     
     let refInstitutions = FIRDatabase.database().reference(withPath: "features")
     let refInstitutionsUsers = FIRDatabase.database().reference(withPath: "institution-users")
+    
+    var password_aes : String = "";
 
     // MARK: Life Cycle methods
     override func viewDidLoad() {
@@ -64,19 +66,14 @@ class RegisterInstitutionViewController: UIViewController {
     
     // MARK: Firebase methods
     func register(_ institution : Institution) {
-    
-        let password = self.passwordField.text!
         
-        // Criptografia insegura
-        let hash = password.md5()
+        //  Criptografia insegura (md5)
+        // let password_md5 = md5Encryption(self.passwordField.text!)
         
-        // Criptografia segura
-//        let bytes = Array(password.utf8)
-//        let plain = Data(bytes: bytes)
-//        let encrypted = try! plain.encrypt(cipher: ChaCha20(key: password, iv: String(password.characters.reversed())))
-//        let decrypted = try! encrypted.decrypt(cipher: ChaCha20(key: password, iv: String(password.characters.reversed())))
+        // Criptografia segura (AES)
+        password_aes = aesEncryption(self.passwordField.text!)
         
-        FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: self.passwordField.text!) { (user, error) in
+        FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: password_aes) { (user, error) in
             
             var title : String = ""
             var msg : String = ""
@@ -100,7 +97,9 @@ class RegisterInstitutionViewController: UIViewController {
             
             let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
             let okAction = UIAlertAction(title: "Ok", style: .default, handler: { (okAction) in
-                self.dismiss(animated: true, completion: nil)
+                if (error == nil) {
+                    self.dismiss(animated: true, completion: nil)
+                }
             })
             
             alert.addAction(okAction)
@@ -124,7 +123,7 @@ class RegisterInstitutionViewController: UIViewController {
     
     //Save registered user in database
     func insertRegisteredUser(_ institution: Institution, uid: String) {
-        
+    
         let date = Date()
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy HH:mm:ss"
@@ -134,7 +133,7 @@ class RegisterInstitutionViewController: UIViewController {
                                           name: institution.name,
                                           info: institution.info,
                                           email: institution.email,
-                                          password: self.passwordField.text!,
+                                          password: password_aes,
                                           registerDate: dateStr,
                                           contact: institution.contact,
                                           phone: institution.phone,
@@ -148,10 +147,43 @@ class RegisterInstitutionViewController: UIViewController {
                                           zipCode: institution.zipCode,
                                           group: institution.group)
         
-    let userInstitutionRef = self.refInstitutionsUsers.child(userInstitution.uid)
-    userInstitutionRef.setValue(userInstitution.toAnyObject())
+        let userInstitutionRef = self.refInstitutionsUsers.child(userInstitution.uid)
+        userInstitutionRef.setValue(userInstitution.toAnyObject())
         
         SVProgressHUD.dismiss()
+    }
+    
+    // MARK: Encryption methods
+    func md5Encryption(_ password: String) -> String {
+        return password.md5()
+    }
+    
+    func aesEncryption(_ password: String) -> String {
+        
+        do {
+            let key : Array<UInt8> = Array("770A8A65DA156D24EE2A093277530142".utf8)
+            let iv  : Array<UInt8> = Array("F5502320F8429037".utf8)
+            let bytesPass : Array<UInt8> = Array(password.utf8)
+            
+            let encrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).encrypt(bytesPass);
+            let decrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).decrypt(encrypted)
+            
+            let encryptedStr = Data(bytes: encrypted).toHexString()
+            print(encryptedStr)
+            
+            if let decryptedStr = String(data: Data(bytes: decrypted), encoding: .utf8) {
+                print(decryptedStr)
+            } else {
+                print("That's not a valid UTF-8 sequence.")
+            }
+            
+            return encryptedStr
+            
+        } catch {
+            print(error)
+        }
+        
+        return password;
     }
     
     // MARK: Validation methods
@@ -206,5 +238,4 @@ class RegisterInstitutionViewController: UIViewController {
         alert.addAction(okAction)
         self.present(alert, animated: true, completion: nil)
     }
-
 }
