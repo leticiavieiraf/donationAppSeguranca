@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 import SVProgressHUD
 import CryptoSwift
+import Locksmith
 
 class LoginInstitutionViewController: UIViewController {
     
@@ -84,9 +85,13 @@ class LoginInstitutionViewController: UIViewController {
         SVProgressHUD.show()
         
         // Criptografia segura (AES)
-        let password_aes = aesEncryption(self.passwordField.text!)
+        let password_aes = aes256Encryption(self.passwordField.text!)
         
-        FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: password_aes) { (user, error) in
+        // Criptografia segura e ideal Hash SHA-256 (PBKDF2)
+        let salt = loadSalt()
+        let password_sha256 = sha256SaltHash(self.passwordField.text!, salt: salt)
+        
+        FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: password_sha256) { (user, error) in
             
             SVProgressHUD.dismiss()
             
@@ -111,7 +116,7 @@ class LoginInstitutionViewController: UIViewController {
     }
     
     // MARK: Encryption methods
-    func aesEncryption(_ password: String) -> String {
+    func aes256Encryption(_ password: String) -> String {
         
         do {
             let key : Array<UInt8> = Array("770A8A65DA156D24EE2A093277530142".utf8)
@@ -137,6 +142,37 @@ class LoginInstitutionViewController: UIViewController {
         }
         
         return password;
+    }
+    
+    func sha256SaltHash(_ password: String, salt: String) -> String {
+        
+        let bytesPass : Array<UInt8> = Array(password.utf8);
+        let salt: Array<UInt8> = Array(salt.utf8)
+        
+        do {
+            let hashed = try PKCS5.PBKDF2(password: bytesPass, salt: salt, iterations: 4096, variant: .sha256).calculate()
+            let hashedStr = Data(bytes: hashed).toHexString()
+            
+            return hashedStr
+            
+        } catch {
+            print (error)
+        }
+        
+        return password
+    }
+    
+    // MARK: Keychain Access method
+    func loadSalt() -> String {
+        
+        // Reading data from the keychain
+        if let saltDictionary = Locksmith.loadDataForUserAccount(userAccount: self.emailField.text!) {
+            if let userSalt = saltDictionary["userSalt"] {
+              return userSalt as! String
+            }
+        }
+        
+         return ""
     }
     
     // MARK: Validation methods

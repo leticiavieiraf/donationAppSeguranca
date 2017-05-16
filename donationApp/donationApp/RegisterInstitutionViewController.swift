@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 import SVProgressHUD
 import CryptoSwift
+import Locksmith
 
 class RegisterInstitutionViewController: UIViewController {
     
@@ -24,7 +25,9 @@ class RegisterInstitutionViewController: UIViewController {
     let refInstitutions = FIRDatabase.database().reference(withPath: "features")
     let refInstitutionsUsers = FIRDatabase.database().reference(withPath: "institution-users")
     
-    var password_aes : String = "";
+    var password_aes256 : String = "";
+    var password_sha256 : String = "";
+    var salt : String = "";
 
     // MARK: Life Cycle methods
     override func viewDidLoad() {
@@ -68,12 +71,16 @@ class RegisterInstitutionViewController: UIViewController {
     func register(_ institution : Institution) {
         
         //  Criptografia insegura (md5)
-        // let password_md5 = md5Encryption(self.passwordField.text!)
+        // let password_md5 = md5Hash(self.passwordField.text!)
         
-        // Criptografia segura (AES)
-        password_aes = aesEncryption(self.passwordField.text!)
+        // Criptografia segura (AES-256)
+        password_aes256 = aes256Encryption(self.passwordField.text!)
         
-        FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: password_aes) { (user, error) in
+        // Criptografia segura e ideal Hash SHA-256 (PBKDF2)
+        salt = randomString()
+        password_sha256 = sha256SaltHash(self.passwordField.text!, salt: salt)
+        
+        FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: password_sha256) { (user, error) in
             
             var title : String = ""
             var msg : String = ""
@@ -92,6 +99,7 @@ class RegisterInstitutionViewController: UIViewController {
                 title = "Sucesso"
                 msg = "Cadastro realizado com sucesso. "
                 
+                self.saveSalt()
                 self.insertRegisteredUser(institution, uid:user.uid)
             }
             
@@ -133,7 +141,7 @@ class RegisterInstitutionViewController: UIViewController {
                                           name: institution.name,
                                           info: institution.info,
                                           email: institution.email,
-                                          password: password_aes,
+                                          password: password_sha256,
                                           registerDate: dateStr,
                                           contact: institution.contact,
                                           phone: institution.phone,
@@ -154,22 +162,21 @@ class RegisterInstitutionViewController: UIViewController {
     }
     
     // MARK: Encryption methods
-    func md5Encryption(_ password: String) -> String {
+    func md5Hash(_ password: String) -> String {
         return password.md5()
     }
     
-    func aesEncryption(_ password: String) -> String {
+    func aes256Encryption(_ password: String) -> String {
         
         do {
             let key : Array<UInt8> = Array("770A8A65DA156D24EE2A093277530142".utf8)
             let iv  : Array<UInt8> = Array("F5502320F8429037".utf8)
             let bytesPass : Array<UInt8> = Array(password.utf8)
             
-            let encrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).encrypt(bytesPass);
+            let encrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).encrypt(bytesPass)
             let decrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).decrypt(encrypted)
             
             let encryptedStr = Data(bytes: encrypted).toHexString()
-            print(encryptedStr)
             
             if let decryptedStr = String(data: Data(bytes: decrypted), encoding: .utf8) {
                 print(decryptedStr)
@@ -183,7 +190,64 @@ class RegisterInstitutionViewController: UIViewController {
             print(error)
         }
         
-        return password;
+        return password
+    }
+    
+    func sha256SaltHash(_ password: String, salt: String) -> String {
+        
+        let bytesPass : Array<UInt8> = Array(password.utf8);
+        let salt: Array<UInt8> = Array(salt.utf8)
+        
+        do {
+            let hashed = try PKCS5.PBKDF2(password: bytesPass, salt: salt, iterations: 4096, variant: .sha256).calculate()
+            let hashedStr = Data(bytes: hashed).toHexString()
+            
+            return hashedStr
+            
+        } catch {
+            print (error)
+        }
+        
+        return password
+    }
+    
+    // MARK: Keychain Access method
+    func saveSalt() {
+        
+        do {
+            // Writing data to the keychain
+            try Locksmith.saveData(data: ["userSalt": self.salt], forUserAccount: self.emailField.text!)
+        } catch {
+            print(error)
+        }
+    }
+    
+    // MARK: Private methods
+    func randomString() -> String {
+        
+        let length: Int = randomNumber()
+        
+        let letters : NSString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let len = UInt32(letters.length)
+        
+        var randomString = ""
+        
+        for _ in 0 ..< length {
+            let rand = arc4random_uniform(len)
+            var nextChar = letters.character(at: Int(rand))
+            randomString += NSString(characters: &nextChar, length: 1) as String
+        }
+        
+        return randomString
+    }
+    
+    func randomNumber() -> Int
+    {
+        let MAX : UInt32 = 20
+        let MIN : UInt32 = 10
+        
+        let random_number = Int(arc4random_uniform(MAX) + MIN)
+        return random_number
     }
     
     // MARK: Validation methods
