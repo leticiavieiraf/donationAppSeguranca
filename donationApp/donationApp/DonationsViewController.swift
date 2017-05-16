@@ -10,6 +10,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 import SVProgressHUD
+import AVFoundation
 
 class DonationsViewController: UIViewController, UITableViewDataSource {
     
@@ -40,6 +41,9 @@ class DonationsViewController: UIViewController, UITableViewDataSource {
             
         } else {
             loadDonations()
+            
+            // M1: Uso indevido da plataforma
+            requestCameraAcess()
         }
     }
     
@@ -104,8 +108,25 @@ class DonationsViewController: UIViewController, UITableViewDataSource {
         
         return cell
     }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    func requestCameraAcess() {
+        
+        if AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo) ==  AVAuthorizationStatus.authorized {
+            // Already Authorized
+        } else {
+            // Request Acess
+            AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { (granted :Bool) -> Void in
+                if granted == true {
+                    // User granted
+                } else {
+                    // User Rejected
+                }
+            });
+        }
     }
     
 }
