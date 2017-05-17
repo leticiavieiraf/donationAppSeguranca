@@ -78,7 +78,8 @@ class RegisterInstitutionViewController: UIViewController {
         
         // Criptografia segura e ideal Hash SHA-256 (PBKDF2)
         salt = randomString()
-        password_sha256 = sha256SaltHash(self.passwordField.text!, salt: salt)
+        let saltAndPassword = salt + self.passwordField.text!
+        password_sha256 = sha256SaltHash(saltAndPassword, salt: salt)
         
         FIRAuth.auth()?.createUser(withEmail: self.emailField.text!, password: password_sha256) { (user, error) in
             
@@ -179,7 +180,7 @@ class RegisterInstitutionViewController: UIViewController {
             let encryptedStr = Data(bytes: encrypted).toHexString()
             
             if let decryptedStr = String(data: Data(bytes: decrypted), encoding: .utf8) {
-                print(decryptedStr)
+               // do something
             } else {
                 print("That's not a valid UTF-8 sequence.")
             }
@@ -195,7 +196,7 @@ class RegisterInstitutionViewController: UIViewController {
     
     func sha256SaltHash(_ password: String, salt: String) -> String {
         
-        let bytesPass : Array<UInt8> = Array(password.utf8);
+        let bytesPass: Array<UInt8> = Array(password.utf8);
         let salt: Array<UInt8> = Array(salt.utf8)
         
         do {
@@ -217,6 +218,11 @@ class RegisterInstitutionViewController: UIViewController {
         do {
             // Writing data to the keychain
             try Locksmith.saveData(data: ["userSalt": self.salt], forUserAccount: self.emailField.text!)
+            
+//            let preferences = UserDefaults.standard
+//            preferences.setValue(self.salt, forKey: "userSalt")
+//            preferences.synchronize()
+          
         } catch {
             print(error)
         }

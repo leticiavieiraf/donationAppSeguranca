@@ -89,7 +89,8 @@ class LoginInstitutionViewController: UIViewController {
         
         // Criptografia segura e ideal Hash SHA-256 (PBKDF2)
         let salt = loadSalt()
-        let password_sha256 = sha256SaltHash(self.passwordField.text!, salt: salt)
+        let saltAndPassword = salt + self.passwordField.text!
+        let password_sha256 = sha256SaltHash(saltAndPassword, salt: salt)
         
         FIRAuth.auth()?.signIn(withEmail: self.emailField.text!, password: password_sha256) { (user, error) in
             
@@ -119,9 +120,9 @@ class LoginInstitutionViewController: UIViewController {
     func aes256Encryption(_ password: String) -> String {
         
         do {
-            let key : Array<UInt8> = Array("770A8A65DA156D24EE2A093277530142".utf8)
-            let iv  : Array<UInt8> = Array("F5502320F8429037".utf8)
-            let bytesPass : Array<UInt8> = Array(password.utf8)
+            let key: Array<UInt8> = Array("770A8A65DA156D24EE2A093277530142".utf8)
+            let iv: Array<UInt8> = Array("F5502320F8429037".utf8)
+            let bytesPass: Array<UInt8> = Array(password.utf8)
             
             let encrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).encrypt(bytesPass);
             let decrypted = try AES(key: key, iv: iv, blockMode: .CBC, padding: PKCS7()).decrypt(encrypted)
@@ -146,7 +147,7 @@ class LoginInstitutionViewController: UIViewController {
     
     func sha256SaltHash(_ password: String, salt: String) -> String {
         
-        let bytesPass : Array<UInt8> = Array(password.utf8);
+        let bytesPass: Array<UInt8> = Array(password.utf8);
         let salt: Array<UInt8> = Array(salt.utf8)
         
         do {
@@ -178,7 +179,7 @@ class LoginInstitutionViewController: UIViewController {
     // MARK: Validation methods
     func isEmptyFields() -> Bool {
         
-        var isEmpty : Bool = false;
+        var isEmpty: Bool = false;
         
         if let email = self.emailField.text, email.isEmpty {
             self.emailErrorImage.isHidden = false;
