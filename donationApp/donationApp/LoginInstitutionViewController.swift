@@ -4,7 +4,6 @@
 //
 //  Created by Leticia Vieira Fernandes on 14/04/17.
 //  Copyright © 2017 PUC. All rights reserved.
-//
 
 import UIKit
 import Firebase
@@ -27,6 +26,13 @@ class LoginInstitutionViewController: UIViewController {
     // MARK: Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let tap : UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        self.view.addGestureRecognizer(tap)
+    }
+    
+    func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     // MARK: Actions

@@ -32,6 +32,13 @@ class RegisterInstitutionViewController: UIViewController {
     // MARK: Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let tap : UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        self.view.addGestureRecognizer(tap)
+    }
+    
+    func dismissKeyboard() {
+        view.endEditing(true)
     }
 
     // MARK: Actions
