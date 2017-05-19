@@ -43,7 +43,7 @@ class DonationsViewController: UIViewController, UITableViewDataSource {
             loadDonations()
             
             // M1: Uso indevido da plataforma
-            requestCameraAcess()
+            //requestCameraAcess()
         }
     }
     
@@ -109,24 +109,24 @@ class DonationsViewController: UIViewController, UITableViewDataSource {
         return cell
     }
     
+    // MARK: RequestAccess 
+//    func requestCameraAcess() {
+//
+//        if AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo) ==  AVAuthorizationStatus.authorized {
+//            // Already Authorized
+//        } else {
+//            // Request Acess
+//            AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { (granted :Bool) -> Void in
+//                if granted == true {
+//                    // User granted
+//                } else {
+//                    // User Rejected
+//                }
+//            });
+//        }
+//    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-    
-    func requestCameraAcess() {
-        
-        if AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo) ==  AVAuthorizationStatus.authorized {
-            // Already Authorized
-        } else {
-            // Request Acess
-            AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo, completionHandler: { (granted :Bool) -> Void in
-                if granted == true {
-                    // User granted
-                } else {
-                    // User Rejected
-                }
-            });
-        }
-    }
-    
 }

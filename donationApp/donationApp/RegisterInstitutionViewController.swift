@@ -50,10 +50,15 @@ class RegisterInstitutionViewController: UIViewController {
         
         if !isMatchPasswords() {
             self.showAlert(withTitle: "Atenção!", message: "As senhas digitadas não correspondem.")
+            return
+        }
+           
+        if isShortPassword() {
+            self.showAlert(withTitle: "Atenção!", message: "A senha deve ter no mínimo 6 caracteres.")
+            return
         }
         else {
             // Busca Instituições
-            
             SVProgressHUD.setDefaultStyle(.dark)
             SVProgressHUD.show()
             
@@ -77,7 +82,9 @@ class RegisterInstitutionViewController: UIViewController {
     // MARK: Firebase methods
     func register(_ institution : Institution) {
         
-        //  Criptografia insegura (md5)
+        // M5: Criptografia inadequada
+        
+        // Criptografia insegura (md5)
         // let password_md5 = md5Hash(self.passwordField.text!)
         
         // Criptografia segura (AES-256)
@@ -223,6 +230,8 @@ class RegisterInstitutionViewController: UIViewController {
     func saveSalt() {
         
         do {
+            // M2: Dados inseguros
+            
             // Writing data to the keychain
             try Locksmith.saveData(data: ["userSalt": self.salt], forUserAccount: self.emailField.text!)
             
@@ -301,6 +310,17 @@ class RegisterInstitutionViewController: UIViewController {
         }
         
         return isMatch
+    }
+    
+    func isShortPassword() -> Bool {
+        
+        var  isShortPassword : Bool = false;
+        
+        if (self.passwordField.text?.characters.count)! < 6 {
+            isShortPassword = true
+        }
+        
+        return isShortPassword
     }
     
     func showAlert(withTitle: String, message: String) {

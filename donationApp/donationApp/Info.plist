@@ -67,8 +67,6 @@
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>It&apos;s necessary to show the donator profile photo on it&apos;s profile page and at Donations page.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera desnecessary access</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>

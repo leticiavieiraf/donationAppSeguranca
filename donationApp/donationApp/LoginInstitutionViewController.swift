@@ -42,6 +42,8 @@ class LoginInstitutionViewController: UIViewController {
             return
         }
         else {
+            // M4: Autenticação insegura
+            
             // Falha de segurança
             // loginInsecure()
             
@@ -53,6 +55,8 @@ class LoginInstitutionViewController: UIViewController {
     // MARK: Firebase methods
     func loginInsecure() {
         
+        // M3: Comunicação insegura
+        
         let urlString = "http://tecstarstudio-developer.azurewebsites.net/api/PosGraduacao/Seguranca/logar/" + self.emailField.text! + "/" + self.passwordField.text!
         let url = URL(string: urlString)!
         let session = URLSession.shared
@@ -63,7 +67,6 @@ class LoginInstitutionViewController: UIViewController {
         let task = session.dataTask(with: url) { data, response, error in
             
             do {
-                
                 if let data = data {
                     success = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! Bool
                 }
@@ -137,9 +140,11 @@ class LoginInstitutionViewController: UIViewController {
             print(encryptedStr)
             
             if let decryptedStr = String(data: Data(bytes: decrypted), encoding: .utf8) {
-                print(decryptedStr)
+                
+                // M7: Questões de qualidade do código do cliente
+                //print(decryptedStr)
             } else {
-                print("That's not a valid UTF-8 sequence.")
+                //print("That's not a valid UTF-8 sequence.")
             }
             
             return encryptedStr
